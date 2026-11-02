@@ -1,0 +1,32 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Go
+master-go/telefleet-master
+master-go/*.exe
+*.test
+*.out
+
+# Media & Runtime Volumes
+media/
+shared_media/
+*.mp4
+*.mkv
+*.wav
+*.srt
+*.ass
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+

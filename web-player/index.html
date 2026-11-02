@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Смотреть серию в Full HD 1080p (Русские субтитры)</title>
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --card-bg: #111827;
+      --border-color: #1f2937;
+      --accent-rose: #e11d48;
+      --accent-emerald: #10b981;
+      --accent-indigo: #4f46e5;
+      --accent-gold: #f59e0b;
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px 16px;
+    }
+
+    .header-bar {
+      width: 100%;
+      max-width: 880px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .episode-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .badge-hd {
+      background: rgba(225, 29, 72, 0.18);
+      color: #fda4af;
+      border: 1px solid rgba(225, 29, 72, 0.4);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .player-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 880px;
+      aspect-ratio: 16 / 9;
+      background: var(--card-bg);
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Başlangıç Poster Ekranı */
+    #poster-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, rgba(17, 24, 39, 0.65) 0%, rgba(9, 13, 22, 0.96) 100%);
+      text-align: center;
+      padding: 20px;
+    }
+
+    .play-btn {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: var(--accent-rose);
+      border: none;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      cursor: pointer;
+      box-shadow: 0 0 30px rgba(225, 29, 72, 0.7);
+      transition: transform 0.15s ease;
+    }
+
+    .play-btn:hover {
+      transform: scale(1.06);
+    }
+
+    /* YouTube Pre-Roll Sponsor Katmanı */
+    #yt-preroll-box {
+      position: absolute;
+      inset: 0;
+      z-index: 60;
+      display: none;
+      background: #000;
+    }
+
+    #yt-timer-bar {
+      position: absolute;
+      bottom: 14px;
+      right: 14px;
+      z-index: 80;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid var(--accent-indigo);
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #skip-btn {
+      display: none;
+      background: var(--accent-emerald);
+      color: #090d16;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    video#main-episode {
+      width: 100%;
+      height: 100%;
+      display: none;
+      background: #000;
+    }
+
+    /* Alt Aksiyon ve Telegram Stars VIP Kartı */
+    .actions-panel {
+      width: 100%;
+      max-width: 880px;
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .vip-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .vip-btn {
+      background: var(--accent-gold);
+      color: #090d16;
+      text-decoration: none;
+      font-weight: 800;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: inline-block;
+    }
+
+    .spoke-btn {
+      display: none;
+      background: var(--accent-indigo);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      padding: 12px 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <h1 class="episode-title" id="episode-heading">🔥 Загрузка серии... — Full HD 1080p</h1>
+    <span class="badge-hd">1080p • Русские субтитры</span>
+  </div>
+
+  <div class="player-wrapper">
+    <!-- 1. Poster Katmanı -->
+    <div id="poster-overlay">
+      <button class="play-btn" id="start-play-btn" onclick="handleStartClick()">▶</button>
+      <p style="margin-top: 14px; font-weight: 600;" id="poster-subtext">
+        Нажмите, чтобы запустить плеер
+      </p>
+    </div>
+
+    <!-- 2. Sponsorlu YouTube Pre-Roll Katmanı (Content Locker) -->
+    <div id="yt-preroll-box">
+      <div id="yt-player"></div>
+      <div id="yt-timer-bar">
+        <span id="countdown-text">Серия начнется через: 30 сек (Не закрывайте видео)</span>
+        <button id="skip-btn" onclick="unlockAndPlayEpisode()">▶ Перейти к просмотру серии</button>
+      </div>
+    </div>
+
+    <!-- 3. Asıl Dizi Bölümü -->
+    <video id="main-episode" controls playsinline></video>
+  </div>
+
+  <div class="actions-panel">
+    <a id="spoke-channel-link" class="spoke-btn" href="#" target="_blank" rel="noopener noreferrer">
+      📂 Открыть полную серию в закрытом Telegram-архиве (2 ГБ Full HD)
+    </a>
+
+    <div class="vip-card" id="vip-promo-box">
+      <div>
+        <div style="font-weight: 700; color: #fcd34d;">⚡ Надоело ждать рекламу?</div>
+        <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+          Откройте мгновенный VIP-доступ ко всем сериям в 1080p без рекламы через Telegram Stars.
+        </div>
+      </div>
+      <a id="vip-Bot-link" class="vip-btn" href="#" target="_blank" rel="noopener noreferrer">
+        ⭐️ Включить VIP (50 Stars)
+      </a>
+    </div>
+  </div>
+
+  <script src="https://www.youtube.com/iframe_api"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const episodeCode = params.get("ep") || "default";
+    const userId = parseInt(params.get("uid") || "0", 10);
+
+    let playerConfig = null;
+    let ytPlayer = null;
+    let remainingSec = 30;
+    let timerInterval = null;
+
+    async function loadPlayerConfig() {
+      try {
+        const res = await fetch(`/api/player-config?ep=${encodeURIComponent(episodeCode)}&uid=${userId}`);
+        playerConfig = await res.json();
+
+        document.getElementById("episode-heading").innerText =
+          `🔥 ${playerConfig.title_ru} — ${playerConfig.episode_number} Серия (Full HD)`;
+
+        if (playerConfig.bot_vip_deep_link) {
+          const vipBtn = document.getElementById("vip-Bot-link");
+          vipBtn.href = playerConfig.bot_vip_deep_link;
+          vipBtn.innerText = `⭐️ Включить VIP (${playerConfig.vip_price_stars || 50} Stars)`;
+        }
+
+        if (playerConfig.stream_url) {
+          const videoEl = document.getElementById("main-episode");
+          videoEl.src = playerConfig.stream_url;
+        }
+
+        if (playerConfig.preroll_campaign && playerConfig.preroll_campaign.required_watch_sec) {
+          remainingSec = playerConfig.preroll_campaign.required_watch_sec;
+        }
+
+        if (playerConfig.is_vip) {
+          document.getElementById("vip-promo-box").style.display = "none";
+          document.getElementById("poster-subtext").innerText = "👑 VIP-доступ активен — запуск без рекламы";
+        }
+      } catch (err) {
+        console.error("Player yapılandırması yüklenemedi:", err);
+      }
+    }
+
+    function handleStartClick() {
+      if (playerConfig && playerConfig.is_vip) {
+        unlockAndPlayEpisode();
+        return;
+      }
+      startYouTubePreRollLocker();
+    }
+
+    function startYouTubePreRollLocker() {
+      document.getElementById("poster-overlay").style.display = "none";
+      document.getElementById("yt-preroll-box").style.display = "block";
+
+      const videoId =
+        (playerConfig && playerConfig.preroll_campaign && playerConfig.preroll_campaign.target_url) ||
+        "M7lc1UVf-VE";
+
+      ytPlayer = new YT.Player("yt-player", {
+        width: "100%",
+        height: "100%",
+        videoId: videoId,
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          rel: 0,
+          modestbranding: 1,
+          playsinline: 1
+        },
+        events: {
+          onReady: (event) => {
+            event.target.unMute();
+            event.target.setVolume(65);
+            event.target.playVideo();
+          },
+          onStateChange: (event) => {
+            if (event.data === YT.PlayerState.PLAYING) {
+              startWatchTimer();
+            } else {
+              stopWatchTimer();
+            }
+          }
+        }
+      });
+    }
+
+    function startWatchTimer() {
+      if (timerInterval) return;
+      timerInterval = setInterval(() => {
+        if (document.hidden) return;
+        remainingSec--;
+        document.getElementById("countdown-text").innerText =
+          `Серия начнется через: ${remainingSec} сек`;
+
+        if (remainingSec <= 0) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+          document.getElementById("countdown-text").style.display = "none";
+          document.getElementById("skip-btn").style.display = "inline-block";
+          notifyAdCompleted();
+        }
+      }, 1000);
+    }
+
+    function stopWatchTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    async function notifyAdCompleted() {
+      try {
+        const campaignId =
+          playerConfig && playerConfig.preroll_campaign ? playerConfig.preroll_campaign.id : "";
+        await fetch("/api/ad-complete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            campaign_id: campaignId,
+            episode_code: episodeCode,
+            user_id: userId
+          })
+        });
+      } catch (e) {
+        console.warn("Ad completion bildirimi başarısız:", e);
+      }
+    }
+
+    function unlockAndPlayEpisode() {
+      if (ytPlayer && typeof ytPlayer.stopVideo === "function") {
+        ytPlayer.stopVideo();
+      }
+      document.getElementById("poster-overlay").style.display = "none";
+      document.getElementById("yt-preroll-box").style.display = "none";
+
+      if (playerConfig && playerConfig.spoke_invite_link) {
+        const spokeBtn = document.getElementById("spoke-channel-link");
+        spokeBtn.href = playerConfig.spoke_invite_link;
+        spokeBtn.style.display = "block";
+      }
+
+      const epVideo = document.getElementById("main-episode");
+      epVideo.style.display = "block";
+      if (epVideo.src) {
+        epVideo.play().catch(() => {});
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", loadPlayerConfig);
+  </script>
+</body>
+</html>
+
